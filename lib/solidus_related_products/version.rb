@@ -8,7 +8,7 @@ module SolidusRelatedProducts
   end
 
   module VERSION
-    MAJOR = 1
+    MAJOR = 2
     MINOR = 0
     TINY  = 0
     PRE   = nil
