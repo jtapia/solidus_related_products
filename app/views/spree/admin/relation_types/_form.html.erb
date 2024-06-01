@@ -1,19 +1,31 @@
 <div data-hook="admin_relation_type_form_fields" class="row">
   <div class="col-md-12">
     <div data-hook="name" class="form-group">
-      <%= f.label :name, Spree.t(:name) %> <span class="required">*</span>
+      <%= f.label :name, I18n.t('spree.name') %> <span class="required">*</span>
       <%= f.text_field :name, class: 'form-control' %>
       <%= error_message_on :relation_type, :name %>
     </div>
+    <div data-hook="applies_from" class="form-group">
+      <%= f.label :applies_from, I18n.t('spree.applies_from') %> <span class="required">*</span>
+      <%= f.text_field :applies_from, value: f.object.nil? ? 'Spree::Product' : f.object.applies_from, class: 'form-control' %>
+      <%= error_message_on :relation_type, :applies_from %>
+    </div>
     <div data-hook="applies_to" class="form-group">
-      <%= f.label :applies_to, Spree.t(:applies_to) %> <span class="required">*</span>
+      <%= f.label :applies_to, I18n.t('spree.applies_to') %> <span class="required">*</span>
       <%= f.text_field :applies_to, value: f.object.nil? ? 'Spree::Product' : f.object.applies_to, class: 'form-control' %>
       <%= error_message_on :relation_type, :applies_to %>
     </div>
     <div data-hook="description" class="form-group">
-      <%= f.label :description, Spree.t(:description) %><br />
+      <%= f.label :description, I18n.t('spree.description') %><br />
       <%= f.text_area :description, rows: 4, class: 'form-control' %>
       <%= error_message_on :relation_type, :description %>
     </div>
+    <% if @relation_type.new_record? %>
+      <div data-hook="bidirectional" class="form-group">
+        <%= f.label :bidirectional, I18n.t('spree.bidirectional') %><br />
+        <%= f.check_box :bidirectional, class: 'form-control' %>
+        <%= error_message_on :bidirectional, :bidirectional %>
+      </div>
+    <% end %>
   </div>
 </div>

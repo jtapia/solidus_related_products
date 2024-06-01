@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Spree::Admin::ProductsController, type: :controller do
   stub_authorization!
 
@@ -5,11 +7,10 @@ RSpec.describe Spree::Admin::ProductsController, type: :controller do
   let!(:product) { create(:product) }
 
   before { stub_authentication! }
-  after  { Spree::Admin::ProductsController.clear_overrides! }
 
   context 'related' do
     it 'is not routable' do
-      spree_get :related, id: product.id
+      get :related, params: { id: product.id }
       expect(response.status).to be(200)
     end
 

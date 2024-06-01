@@ -1,4 +1,6 @@
-class UpdateRelationTypes < ActiveRecord::Migration
+# frozen_string_literal: true
+
+class UpdateRelationTypes < ActiveRecord::Migration[6.1]
   def up
     Spree::RelationType.where(applies_to: 'Product').update_all(applies_to: 'Spree::Product')
   end

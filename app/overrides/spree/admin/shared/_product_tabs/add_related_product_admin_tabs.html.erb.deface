@@ -1,0 +1,5 @@
+<!-- insert_bottom "[data-hook=admin_product_tabs]"-->
+
+<%= content_tag :li, class: ('active' if current == 'Related Products') do %>
+  <%= link_to I18n.t('spree.admin.tabs.relation_types'), spree.related_admin_product_path(@product) %>
+<% end %>

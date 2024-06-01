@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 RSpec.describe Spree::Calculator::RelatedProductDiscount, type: :model do
   subject { described_class.new }
 
-  context '.description' do
+  describe '.description' do
     it 'outputs relation product discount' do
-      expect(subject.description).to eq Spree.t(:related_product_discount)
+      expect(subject.description).to eq I18n.t('spree.related_product_discount')
     end
   end
 
@@ -21,8 +23,8 @@ RSpec.describe Spree::Calculator::RelatedProductDiscount, type: :model do
     context 'with order' do
       before do
         @order    = double('Spree::Order')
-        product   = build_stubbed(:product)
-        variant   = double('Spree::Variant', product: product)
+        product   = create(:product)
+        variant   = double('Spree::Variant', id: 1, product: product)
         price     = double('Spree::Price', variant: variant, amount: 5.00)
         line_item = double('Spree::LineItem', variant: variant, order: @order, quantity: 1, price: 4.99)
 
@@ -30,9 +32,9 @@ RSpec.describe Spree::Calculator::RelatedProductDiscount, type: :model do
         allow(@order).to receive(:line_items).and_return([line_item])
 
         related_product = create(:product)
-        relation_type   = create(:relation_type)
+        relation_type   = create(:product_relation_type)
 
-        create(:relation, relatable: product, related_to: related_product, relation_type: relation_type, discount_amount: 1.0)
+        create(:product_relation, relatable: product, related_to: related_product, relation_type: relation_type, discount_amount: 1.0, description: 'Related Description')
       end
 
       # TODO: figure out what this test is trying to accomplish

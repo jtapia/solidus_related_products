@@ -1,7 +1,10 @@
-require 'solidus_backend'
+# frozen_string_literal: true
+
 require 'solidus_core'
-require 'solidus_related_products/engine'
+require 'solidus_support'
+
+require 'solidus_related_products/configuration'
 require 'solidus_related_products/version'
-require 'coffee_script'
-require 'sass/rails'
+require 'solidus_related_products/engine'
+
 require 'deface'

@@ -1,24 +1,31 @@
+# frozen_string_literal: true
+
+require 'solidus_core'
+require 'solidus_support'
+
 module SolidusRelatedProducts
   class Engine < Rails::Engine
-    require 'spree/core'
-    isolate_namespace Spree
+    include SolidusSupport::EngineExtensions
+
+    isolate_namespace ::Spree
+
     engine_name 'solidus_related_products'
 
-    config.autoload_paths += %W(#{config.root}/lib #{config.root}/app/models/spree/calculator)
-
     initializer 'spree.promo.register.promotion.calculators' do |app|
-      app.config.spree.calculators.promotion_actions_create_adjustments << Spree::Calculator::RelatedProductDiscount
+      app.config.spree.calculators.promotion_actions_create_adjustments << "Spree::Calculator::RelatedProductDiscount"
     end
 
     class << self
       def activate
-        cache_klasses = %W(#{config.root}/app/**/*_decorator*.rb)
-        Dir.glob(cache_klasses) do |klass|
-          Rails.configuration.cache_classes ? require(klass) : load(klass)
-        end
+        ActionView::Base.include RelatedProductsHelper
       end
     end
 
     config.to_prepare(&method(:activate).to_proc)
+
+    # use rspec for tests
+    config.generators do |g|
+      g.test_framework :rspec
+    end
   end
 end

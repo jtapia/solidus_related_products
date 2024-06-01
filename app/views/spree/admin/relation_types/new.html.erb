@@ -1,10 +1,7 @@
-<% content_for :page_title do %>
-  <%= Spree.t(:new_relation_type) %>
-<% end %>
+<% admin_layout "full-width" %>
 
-<% content_for :page_actions do %>
-  <%= button_link_to Spree.t(:back_to_resource_list, resource: Spree::RelationType.model_name.human), spree.admin_relation_types_path, class: 'btn-primary', icon: 'arrow-left' %>
-<% end %>
+<% admin_breadcrumb link_to(plural_resource_name(Spree::RelationType), spree.admin_relation_types_path) %>
+<% admin_breadcrumb(t('spree.new_relation_type')) %>
 
 <%= form_for :relation_type, url: collection_url do |f| %>
   <fieldset>

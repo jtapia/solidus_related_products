@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   module Admin
     class RelationsController < BaseController
@@ -6,19 +8,21 @@ module Spree
       respond_to :js, :html
 
       def create
-        @relation = Relation.new(relation_params)
+        @relation = ::Spree::Relation.new(relation_params)
         @relation.relatable = @product
-        @relation.related_to = Spree::Variant.find(relation_params[:related_to_id]).product
+        @relation.related_to = @relation.relation_type.applies_to
+                                        .constantize.find(relation_params[:related_to_id])
         @relation.save
 
         respond_with(@relation)
       end
 
       def update
-        @relation = Relation.find(params[:id])
-        @relation.update_attribute :discount_amount, relation_params[:discount_amount] || 0
-
-        redirect_to(related_admin_product_url(@relation.relatable))
+        @relation = ::Spree::Relation.find(params[:id])
+        if @relation.update(relation_params)
+          flash[:success] = flash_message_for(@relation, :successfully_updated)
+          redirect_to(related_admin_product_url(@relation.relatable))
+        end
       end
 
       def update_positions
@@ -27,24 +31,24 @@ module Spree
         end
 
         respond_to do |format|
-          format.js { render text: 'Ok' }
+          format.js { render plain: 'Ok' }
         end
       end
 
       def destroy
-        @relation = Relation.find(params[:id])
+        @relation = ::Spree::Relation.find(params[:id])
         if @relation.destroy
           flash[:success] = flash_message_for(@relation, :successfully_removed)
 
           respond_with(@relation) do |format|
-            format.html { redirect_to location_after_destroy }
+            format.html { redirect_back(fallback_location: admin_product_path(@product)) }
             format.js   { render partial: "spree/admin/shared/destroy" }
           end
 
         else
 
           respond_with(@relation) do |format|
-            format.html { redirect_to location_after_destroy }
+            format.html { redirect_back(fallback_location: admin_product_path(@product)) }
           end
         end
       end
@@ -60,20 +64,21 @@ module Spree
           :related_to,
           :relation_type,
           :relatable,
+          :related_to_type,
           :related_to_id,
           :discount_amount,
+          :description,
           :relation_type_id,
-          :related_to_type,
           :position
         ]
       end
 
       def load_data
-        @product = Spree::Product.friendly.find(params[:product_id])
+        @product = ::Spree::Product.friendly.find(params[:product_id])
       end
 
       def model_class
-        Spree::Relation
+        ::Spree::Relation
       end
     end
   end

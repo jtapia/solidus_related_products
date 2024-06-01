@@ -2,37 +2,52 @@
 
 <%= csrf_meta_tag %>
 
-<% if @relation_types.empty? %>
+<% if @relation_types.blank? %>
   <div class="alert alert-warning no-objects-found">
-    <%= Spree.t(:no_relation_types) %>
+    <%= I18n.t('spree.no_relation_types') %>
   </div>
 <% else %>
+
   <div id="add-line-item">
     <fieldset>
-      <legend><%= Spree.t(:add_related_product) %></legend>
-      <div class="row">
-        <div id="related_product_name" class="col-md-5">
+      <legend><%= I18n.t('spree.add_related_product') %></legend>
+      <div data-hook="admin_product_related_products_add" class="row">
+        <div id="related_product_type" class="col-3">
           <div class="form-group">
-            <%= label_tag :add_variant_name, Spree.t(:name_or_sku_short) %>
-            <%= hidden_field_tag :add_variant_name, '', class: 'variant_autocomplete', style: "display: block !important;" %>
+            <%= label_tag :add_type, I18n.t('spree.type') %>
+            <%= select_tag :add_type, options_for_select(
+              @relation_types.map { |rt| [rt.name, rt.id, {'data-relation-type': rt.applies_to}] }),
+              class: 'select2 relation_type', style: "display: block" %>
           </div>
         </div>
-        <div id="related_product_type" class="col-md-4">
+
+        <div id="related_product_name" class="col-3">
           <div class="form-group">
-            <%= label_tag :add_type, Spree.t(:type) %>
-            <%= select_tag :add_type, options_for_select(@relation_types.map { |rt| [rt.name, rt.id] }), class: 'select2' %>
+            <%= label_tag :add_related_to_name, I18n.t('spree.name_or_sku_short') %>
+            <%= hidden_field_tag :add_related_to_name, '', class: 'related_to_autocomplete' %>
           </div>
         </div>
-        <div id="related_product_discount" class="col-md-3">
+
+        <div id="related_product_description" class="col-3">
           <div class="form-group">
-            <%= label_tag :add_discount, Spree.t(:discount_amount) %>
-            <div class="input-group">
-              <%= text_field_tag :add_discount, 0.0, class: 'form-control text-center' %>
-              <span class="input-group-btn">
-                <%= button_link_to Spree.t(:add), admin_product_relations_url(@product), icon: 'add', class: 'btn-success', id: 'add_related_product', data: { update: 'products-table-wrapper' } %>
-              </span>
-            </div>
+            <%= label_tag :add_description, I18n.t('spree.description') %>
+            <%= text_field_tag :add_description, '', class: 'form-control text-center' %>
           </div>
+        </div>
+
+        <div id="related_product_discount" class="col-3">
+          <div class="form-group">
+            <%= label_tag :add_discount, I18n.t('spree.discount_amount') %>
+            <%= text_field_tag :add_discount, 0.0, class: 'form-control text-center' %>
+          </div>
+        </div>
+      </div>
+
+      <div class='row'>
+        <div class='col-12'>
+          <span class="input-group-btn">
+            <%= link_to I18n.t('spree.add'), spree.admin_product_relations_url(@product), icon: 'add', class: 'btn btn-success', id: 'add_related_product', data: { update: 'products-table-wrapper' } %>
+          </span>
         </div>
       </div>
     </fieldset>
@@ -41,30 +56,80 @@
   <div id="products-table-wrapper">
     <%= render 'related_products_table', product: @product %>
   </div>
-
-  <%= content_for :head do %>
-    <script type="text/javascript">
-      var expand_variants = false;
-      $(document).on('click', '#add_related_product', function(){
-        if($('#add_variant_name').val() == '') { return false; }
-        update_target = $(this).data('update');
-        $.ajax({
-          dataType: 'script',
-          url: this.href,
-          type: 'POST',
-          data: {
-            'relation[related_to_type]' : 'Product',
-            'relation[related_to_id]': $('#add_variant_name').val(),
-            'relation[relation_type_id]': $('#add_type').val(),
-            'relation[discount_amount]' : $('#add_discount').val()
-          }
-        });
-        return false;
-      });
-
-      $(function () {
-        $('#add_variant_name.variant_autocomplete').variantAutocomplete();
-      });
-    </script>
-  <% end %>
 <% end %>
+
+<script>
+  var expand_variants = false;
+  $(document).on('click', '#add_related_product', function(){
+    if($('#add_variant_name').val() == '') { return false; }
+    update_target = $(this).data('update');
+    $.ajax({
+      dataType: 'script',
+      url: this.href,
+      type: 'POST',
+      data: {
+        'relation[related_to_type]' : 'Product',
+        'relation[related_to_id]': $('#add_related_to_name').val(),
+        'relation[relation_type_id]': $('#add_type').val(),
+        'relation[discount_amount]' : $('#add_discount').val(),
+        'relation[description]' : $('#description').val()
+      }
+    });
+    return false;
+  });
+
+  $(function () {
+    $('#add_variant_name.variant_autocomplete').variantAutocomplete();
+  });
+
+  var RelatedToAutocomplete;
+
+  RelatedToAutocomplete = (function() {
+    function RelatedToAutocomplete(relationTypeSelector1, relatedToSelector1) {
+      this.relationTypeSelector = relationTypeSelector1;
+      this.relatedToSelector = relatedToSelector1;
+      this.initializeSelect(this.relationTypeSelector);
+      this.setupListeners();
+    }
+
+    RelatedToAutocomplete.prototype.setupListeners = function() {
+      return $(document).on('change', this.relationTypeSelector, (function(_this) {
+        return function(event) {
+          return _this.initializeSelect(event.target);
+        };
+      })(this));
+    };
+
+    RelatedToAutocomplete.prototype.initializeSelect = function(target) {
+      this.selectedType = $(target).find(":selected").data("relationType");
+      if (this.selectedType === 'Spree::Variant') {
+        this.initializeVariantSelect();
+      } else if (this.selectedType === 'Spree::Product') {
+        this.initializeProductSelect();
+      }
+      return $(this.relatedToSelector).css('display', 'block');
+    };
+
+    RelatedToAutocomplete.prototype.initializeProductSelect = function() {
+      return $(this.relatedToSelector).productAutocomplete({
+        multiple: false
+      });
+    };
+
+    RelatedToAutocomplete.prototype.initializeVariantSelect = function() {
+      return $(this.relatedToSelector).variantAutocomplete();
+    };
+
+    return RelatedToAutocomplete;
+
+  })();
+
+  Spree.ready(function($) {
+    var relatedToSelector, relationTypeSelector;
+    relationTypeSelector = '.relation_type';
+    relatedToSelector = '.related_to_autocomplete';
+    if ($(relationTypeSelector).is('*')) {
+      return new RelatedToAutocomplete(relationTypeSelector, relatedToSelector);
+    }
+  });
+</script>

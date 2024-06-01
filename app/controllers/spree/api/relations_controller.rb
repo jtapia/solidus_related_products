@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   module Api
     class RelationsController < Spree::Api::BaseController
@@ -8,9 +10,10 @@ module Spree
         authorize! :create, Relation
         @relation = @product.relations.new(relation_params)
         @relation.relatable = @product
-        @relation.related_to = Spree::Variant.find(relation_params[:related_to_id]).product
+        @relation.related_to = @relation.relation_type.applies_to
+                                        .constantize.find(relation_params[:related_to_id])
         if @relation.save
-          respond_with(@relation, status: 201, default_template: :show)
+          render json: @relation.to_json, status: :created
         else
           invalid_resource!(@relation)
         end
@@ -18,8 +21,8 @@ module Spree
 
       def update
         authorize! :update, Relation
-        if @relation.update_attributes(relation_params)
-          respond_with(@relation, status: 200, default_template: :show)
+        if @relation.update(relation_params)
+          render json: @relation.to_json
         else
           invalid_resource!(@relation)
         end
@@ -32,7 +35,7 @@ module Spree
         end
 
         respond_to do |format|
-          format.json { render nothing: true, status: 200 }
+          format.json { head :ok }
           format.js { render text: 'Ok' }
         end
       end
@@ -56,6 +59,7 @@ module Spree
           :relatable,
           :related_to_id,
           :discount_amount,
+          :description,
           :relation_type_id,
           :related_to_type,
           :position

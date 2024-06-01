@@ -1,0 +1,7 @@
+<!-- insert_bottom '[data-hook="admin_product_sub_tabs"]' -->
+
+<%= tab :relation_types if can?(:admin, ::Spree::RelationType) %>
+
+<% if can? :admin, ::Spree::Product %>
+  <%= tab url: spree.admin_relation_types_path, label: I18n.t('spree.admin.tabs.relation_types'), match_path: '/relation_types' %>
+<% end %>

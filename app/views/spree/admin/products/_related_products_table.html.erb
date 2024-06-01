@@ -1,5 +1,5 @@
 <table class="index sortable" data-hook="products_table" data-sortable-link="<%= update_positions_admin_product_relations_url(@product) %>">
-   <colgroup>
+  <colgroup>
     <col style="width: 5%" />
     <col style="width: 35%" />
     <col style="width: 35%" />
@@ -9,9 +9,10 @@
   <thead>
     <tr data-hook="products_header">
       <th></th>
-      <th><%= Spree.t(:name) %></th>
-      <th><%= Spree.t(:type) %></th>
-      <th><%= Spree.t(:discount_amount) %></th>
+      <th><%= I18n.t('spree.name') %></th>
+      <th><%= I18n.t('spree.type') %></th>
+      <th><%= I18n.t('spree.description') %></th>
+      <th><%= I18n.t('spree.discount_amount') %></th>
       <th class="actions"></th>
     </tr>
   </thead>
@@ -21,16 +22,20 @@
         <td class="handle move-handle">
           <span class="icon icon-move handle"></span>
         </td>
-        <td><%= link_to relation.related_to.name, relation.related_to %></td>
+        <td><%= link_to relation.related_to.name_for_relation, backend_related_resource_url(relation.related_to) %></td>
         <td><%= relation.relation_type.name %></td>
         <td>
           <%= form_for relation, url: admin_product_relation_path(relation.relatable, relation) do |f| %>
-            <div class="input-group">
+            <%= f.text_field :description, class: 'form-control text-center' %>
+            <%= f.button I18n.t('spree.update'), type: 'submit', class: 'button btn-primary', id: 'update_description' %>
+          <% end %>
+        </td>
+        <td>
+          <% unless relation.bidirectional? %>
+            <%= form_for relation, url: admin_product_relation_path(relation.relatable, relation) do |f| %>
               <%= f.text_field :discount_amount, class: 'form-control text-center' %>
-              <span class="input-group-btn">
-                <%= f.button Spree.t(:update), type: 'submit', class: 'btn btn-primary' %>
-              </span>
-            </div>
+              <%= f.button I18n.t('spree.update'), type: 'submit', class: 'button btn-primary', id: 'update_discount_amount'  %>
+            <% end %>
           <% end %>
         </td>
         <td class="actions">

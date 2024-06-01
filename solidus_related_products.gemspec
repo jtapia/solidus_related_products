@@ -1,44 +1,41 @@
-lib = File.expand_path('../lib/', __FILE__)
-$LOAD_PATH.unshift lib unless $LOAD_PATH.include?(lib)
+# frozen_string_literal: true
 
+$:.push File.expand_path('lib', __dir__)
 require 'solidus_related_products/version'
 
 Gem::Specification.new do |s|
-  s.platform    = Gem::Platform::RUBY
-  s.name        = 'solidus_related_products'
-  s.version     = SolidusRelatedProducts.version
-  s.summary     = 'Allows multiple types of relationships between products to be defined'
+  s.name = 'solidus_related_products'
+  s.version = SolidusRelatedProducts::VERSION
+  s.summary = 'Allows multiple types of relationships between products to be defined'
   s.description = s.summary
-  s.required_ruby_version = '>= 2.1.0'
+  s.license = 'BSD-3-Clause'
 
-  s.author       = 'Brian Quinn'
-  s.email        = 'brian@railsdog.com'
-  s.homepage     = 'https://github.com/solidusio-contrib/solidus_related_products'
-  s.license      = 'BSD-3'
+  s.authors = ['Brian Quinn', 'Jonathan Tapia']
+  s.email = 'brian@railsdog.com'
+  s.homepage = 'https://github.com/jtapia/solidus_related_products'
 
-  s.files        = `git ls-files`.split("\n")
-  s.test_files   = `git ls-files -- spec/*`.split("\n")
-  s.require_path = 'lib'
-  s.requirements << 'none'
+  s.files = Dir.chdir(File.expand_path(__dir__)) do
+    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  end
+  s.test_files = Dir['spec/**/*']
+  s.bindir = 'exe'
+  s.executables = s.files.grep(%r{^exe/}) { |f| File.basename(f) }
+  s.require_paths = ['lib']
 
-  s.has_rdoc = false
+  if s.respond_to?(:metadata)
+    s.metadata['homepage_uri'] = s.homepage if s.homepage
+    s.metadata['source_code_uri'] = 'https://github.com/solidusio-contrib/solidus_prototypes'
+  end
 
-  s.add_runtime_dependency 'solidus_backend', ['>= 1.0', '< 3']
-  s.add_runtime_dependency 'deface'
+  s.required_ruby_version = ['>= 3.0', '< 4']
 
-  s.add_development_dependency 'factory_girl', '~> 4.5'
-  s.add_development_dependency 'ffaker'
-  s.add_development_dependency 'rspec-rails', '~> 3.4'
-  s.add_development_dependency 'sqlite3'
-  s.add_development_dependency 'capybara', '~> 2.5'
-  s.add_development_dependency 'capybara-screenshot', '~> 1.0'
-  s.add_development_dependency 'poltergeist', '~> 1.9'
-  s.add_development_dependency 'shoulda-matchers', '~> 2.5'
-  s.add_development_dependency 'simplecov', '~> 0.9'
-  s.add_development_dependency 'database_cleaner', '~> 1.3'
-  s.add_development_dependency 'coffee-rails'
-  s.add_development_dependency 'sass-rails'
-  s.add_development_dependency 'pry-rails'
-  s.add_development_dependency 'rubocop', '>= 0.24.1'
+  s.add_dependency 'solidus_backend', ['>= 3.2.0', '< 5']
+  s.add_dependency 'solidus_core', ['>= 3.2.0', '< 5']
+  s.add_dependency 'solidus_support', '~> 0.5'
+  s.add_dependency 'deface', '~> 1.0'
+
+  s.add_development_dependency 'solidus_dev_support'
+  s.add_development_dependency 'rails-controller-testing'
   s.add_development_dependency 'rspec-activemodel-mocks'
+  s.add_development_dependency 'shoulda-matchers'
 end
